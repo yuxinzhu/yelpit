@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+
+  "name": "Yelp It",
+  "description": "This extension allows users to find reviews on businesses",
+  "version": "1.0",
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "css": ["index.css"],
+      "js": ["jquery-1.11.1.min.js", "index.js"]
+    }
+  ]
+}
