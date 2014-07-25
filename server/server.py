@@ -8,12 +8,11 @@ import urllib
 import urllib2
 import oauth2
 from unidecode import unidecode
-import redis
 import nlp
 
 DB_NUM = 1  
 
-r = redis.StrictRedis(host='localhost', port=6379, db=0)
+
 
 BODY = 'body'
 TARGET = 'target'
@@ -24,30 +23,24 @@ CONSUMER_KEY = "SPJ-oX5isiNEsdCwwajTOA"
 CONSUMER_SECRET = "qo3eXCuN6fFLp1djXPJrNOYFQSQ"
 TOKEN = "aRgC-pfCRzTs4Yl0fO03kHwDTs6bC9d7"
 TOKEN_SECRET = "kJ8Y06m-X1kVoCG7MJerDYvQ1Jk"
+ENCLOSING_NODE = 'enclosing_node'
 
 API_HOST = 'api.yelp.com'
 SEARCH_LIMIT = 1
 
 SEARCH_PATH = '/v2/search/'
 BUSINESS_PATH = '/v2/business/'
-
 app = Flask(__name__, static_url_path='')
 
 @app.route("/rating", methods=['POST'])
 def hello():
     try:   
         # both of these are html elements
-        body, target, cache_key = request.form[BODY], request.form[TARGET], request.form[URL]
+        body, target, cache_key, enclosing_node = request.form[BODY], request.form[TARGET], request.form[URL], request.form[ENCLOSING_NODE]
 
         query_type, query = _get_business(target)
-
-        cache_hit = r.get(cache_key)
-        if cache_hit:
-            print 'HIT THE CACHE: %s' % cache_hit
-            location = cache_hit
-        else:
-            location = _get_location(body)
-            r.set(cache_key, location)
+        print 'hey'
+        location = _get_location(body, enclosing_node, cache_key)
 
         num_results = 1 if query_type == "business" else 3
         if query_type == "business":
@@ -134,13 +127,14 @@ def search(term, location, num_results):
     return yelp(API_HOST, SEARCH_PATH, url_params=url_params)
 
 
-def _get_location(html):
+def _get_location(html, context, cache_key):
   """
   returns a location from a given sample of text
 
   """
-
-  city = nlp.find_location(html)
+  print 'loc'
+  city = nlp.find_location(html, context, cache_key)
+  print city
   if city:
     return city
   return "San Francisco"

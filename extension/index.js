@@ -1,4 +1,6 @@
 $(document).ready(function() {
+    window.totalNotifications = 0;
+
     console.log('Yelp It Extension Attack!');
     /* hardcoding for the win */
     // var imageURL = 'http://s3-media4.fl.yelpcdn.com/assets/2/www/img/9f83790ff7f6/ico/stars/v1/stars_large_4_half.png';
@@ -6,6 +8,8 @@ $(document).ready(function() {
     // var phoneNumber = "(510) 923 9233";
     // var url = "http://www.yelp.com/biz/brazil-fresh-squeeze-cafe-berkeley";
     var maxQueryLength = 5;
+    var windowCount = 0;
+    var maxWindows = 2;
 
     var _popupHTML = function(phoneNumber, imageURL, ratingCount, url, categories, location) {
         var formattedPhoneNumber = '(' + phoneNumber.substr(0, 3) + ') ' + phoneNumber.substr(3, 3) + '-' + phoneNumber.substr(6,4);
@@ -39,7 +43,19 @@ $(document).ready(function() {
         if (json == null || json.result == null) {
             return;
         }
+
+
+        if (windowCount >= maxWindows) {
+            // var arr = document.getElementsByClassName(".notifyjs-wrapper");
+            // arr[arr.length - 1]
+            // windowCount -= 1;
+            console.log('get rid of it');
+            $(".notifyjs-wrapper").slice(maxWindows + 1).css("display", "none");
+            windowCount -= 1;
+        }
+
         var business = json.result;
+
         $.notify.addStyle("yelpit", 
             {
                 html: _popupHTML(business['phone'], 
@@ -57,14 +73,15 @@ $(document).ready(function() {
           autoHide: true,
           clickToHide: true
         });
+        windowCount += 1;
     };
 
-    var request = function(query) {
+    var request = function(query, enclosingNode) {
         if (xhr != null) {
             xhr.abort();
         }
 
-        var formData = {body: $("html").html(), target: String(query), url: document.URL};
+        var formData = {body: $("html").html(), target: String(query), url: document.URL, enclosing_node: enclosingNode};
         console.log(formData);
         var xhr = $.ajax({
             "url": "http://localhost:5000/rating",
@@ -89,10 +106,16 @@ $(document).ready(function() {
 
     var highlightMouseup = function(){
       var st = getSelected();
+      var enclosingNode = "";
+      if (st.focusNode != null) {
+        enclosingNode = st.focusNode['data'];
+      }
+      
+      console.log(enclosingNode);
         if(st!='') {
             var queryLength = st.toString().split(/\s+/).length;
             if (queryLength < maxQueryLength) {
-                request(st);
+                request(st, enclosingNode);
             }
         }
     }
