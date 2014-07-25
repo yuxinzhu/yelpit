@@ -7,7 +7,7 @@ $(document).ready(function() {
     // var categories = ['Sandwiches', 'American'];
     // var phoneNumber = "(510) 923 9233";
     // var url = "http://www.yelp.com/biz/brazil-fresh-squeeze-cafe-berkeley";
-    var maxQueryLength = 5;
+    var maxQueryLength = 8;
     var windowCount = 0;
     var maxWindows = 2;
 
@@ -56,6 +56,8 @@ $(document).ready(function() {
 
         var business = json.result;
 
+        var location = business.location.display_address.join(", ");
+
         $.notify.addStyle("yelpit", 
             {
                 html: _popupHTML(business['phone'], 
@@ -63,7 +65,7 @@ $(document).ready(function() {
                 business['review_count'], 
                 business['url'],
                 business['categories'],
-                business['location']['city'])
+                location)
             });
 
         $.notify({
