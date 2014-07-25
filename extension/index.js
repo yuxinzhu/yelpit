@@ -5,9 +5,9 @@ $(document).ready(function() {
     // var categories = ['Sandwiches', 'American'];
     // var phoneNumber = "(510) 923 9233";
     // var url = "http://www.yelp.com/biz/brazil-fresh-squeeze-cafe-berkeley";
-    var maxQueryLength = 3;
+    var maxQueryLength = 5;
 
-    var _popupHTML = function(phoneNumber, imageURL, ratingCount, url, categories) {
+    var _popupHTML = function(phoneNumber, imageURL, ratingCount, url, categories, location) {
         var formattedPhoneNumber = '(' + phoneNumber.substr(0, 3) + ') ' + phoneNumber.substr(3, 3) + '-' + phoneNumber.substr(6,4);
         var html = "" + 
         "<div class='yelp-it-container'>" + 
@@ -18,7 +18,10 @@ $(document).ready(function() {
         $(categories).each(function(index, element) {
             html += "<span class='category'>" + element[0] + "</span>";
         }); 
-        html += "</div></div>";
+        html += "</div>";
+
+        html += "<div class='yelp-it-address'>" + location + "</div>";
+        html += "</div>";
         return html;
     };
 
@@ -33,18 +36,26 @@ $(document).ready(function() {
 
     var showPopUp = function(json) {
         console.log(json.result);
-        if (json.result == null) {
+        if (json == null || json.result == null) {
             return;
         }
-        var business = json['result'];
-        $.notify.addStyle("yelpit", {html: _popupHTML(business['phone'], business['rating_img_url_large'], business['review_count'], business['url'], business['categories'])});
+        var business = json.result;
+        $.notify.addStyle("yelpit", 
+            {
+                html: _popupHTML(business['phone'], 
+                business['rating_img_url_large'], 
+                business['review_count'], 
+                business['url'],
+                business['categories'],
+                business['location']['city'])
+            });
 
         $.notify({
           businessName: business['name'],
         }, { 
           style: 'yelpit',
-          autoHide: false,
-          clickToHide: false
+          autoHide: true,
+          clickToHide: true
         });
     };
 
@@ -53,7 +64,7 @@ $(document).ready(function() {
             xhr.abort();
         }
 
-        var formData = {body: $("html").html(), target: String(query)};
+        var formData = {body: $("html").html(), target: String(query), url: document.URL};
         console.log(formData);
         var xhr = $.ajax({
             "url": "http://localhost:5000/rating",

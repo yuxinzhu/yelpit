@@ -17,7 +17,8 @@ PAGE_RANK = [
     ("h5", 1),
     ("h6", 1),
     ("p", 1),
-    ("div", 1)
+    ("a", 1)
+    # ("div", 1)
 ]
 
 PROXIMITY_MAX_RANK = 5
@@ -89,15 +90,14 @@ def _find_city_name(query):
 
 def parse_business(html):
     try:
-        # query = BeautifulSoup(html).string
         query = html
-        print query
     except Exception as e:
         print "BeautifulSoup can not parse %s --> %s" % html
     try:
         tokens = nltk.word_tokenize(query)
         pos_tags = nltk.pos_tag(tokens)
-        if any([True for word, pos in pos_tags if pos == "NNP"]):
+        print pos_tags
+        if True in [True for word, pos in pos_tags if pos == "NNP"]:
             print "returning business: %s" % query
             return "business", query
         print "returning subject: %s" % query

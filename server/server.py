@@ -8,17 +8,22 @@ import urllib
 import urllib2
 import oauth2
 from unidecode import unidecode
-
+import redis
 import nlp
+
+DB_NUM = 1  
+
+r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 BODY = 'body'
 TARGET = 'target'
 RESULT = 'result'
+URL = 'url'
 
 CONSUMER_KEY = "SPJ-oX5isiNEsdCwwajTOA"
 CONSUMER_SECRET = "qo3eXCuN6fFLp1djXPJrNOYFQSQ"
-TOKEN = "UIhOx5m-ctCYWEggfmM5_ZlQX9nVwiZY"
-TOKEN_SECRET = "sDhlx0-ZVVIGXmb1xbXRPcvkBrI"
+TOKEN = "aRgC-pfCRzTs4Yl0fO03kHwDTs6bC9d7"
+TOKEN_SECRET = "kJ8Y06m-X1kVoCG7MJerDYvQ1Jk"
 
 API_HOST = 'api.yelp.com'
 SEARCH_LIMIT = 1
@@ -32,13 +37,26 @@ app = Flask(__name__, static_url_path='')
 def hello():
     try:   
         # both of these are html elements
-        body, target = request.form[BODY], request.form[TARGET]
+        body, target, cache_key = request.form[BODY], request.form[TARGET], request.form[URL]
+
         query_type, query = _get_business(target)
 
+        cache_hit = r.get(cache_key)
+        if cache_hit:
+            print 'HIT THE CACHE: %s' % cache_hit
+            location = cache_hit
+        else:
+            location = _get_location(body)
+            r.set(cache_key, location)
+
         num_results = 1 if query_type == "business" else 3
-        response = search(query, _get_location(body), num_results)
-        top_business = response['businesses'][0]
-        return jsonify({RESULT: top_business})
+        if query_type == "business":
+            print 'ITS A BUSINESS'
+            response = search(query, location, num_results)
+            top_business = response['businesses'][0]
+            return jsonify({RESULT: top_business})
+        print 'GETTING OUT OF HERE!'
+        return jsonify({})
     except Exception as e:
         return jsonify({})
 
@@ -75,7 +93,6 @@ def yelp(host, path, url_params=None):
                 'oauth_consumer_key': CONSUMER_KEY
             }
         )
-        print "BLEH"
         token = oauth2.Token(TOKEN, TOKEN_SECRET)
         oauth_request.sign_request(oauth2.SignatureMethod_HMAC_SHA1(), consumer, token)
         signed_url = oauth_request.to_url()
@@ -104,9 +121,9 @@ def search(term, location, num_results):
         dict: The JSON response from the request.
     """
     if isinstance(term, unicode):
-        term = unidecode(term)
+        term = unicode(unidecode(term))
     if isinstance(location, unicode):
-        location = unidecode(term)
+        location = unicode(unidecode(location))
 
     url_params = {
         'term': term,
