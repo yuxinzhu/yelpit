@@ -1,0 +1,64 @@
+@import "utils.less";
+
+@font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+@yelp-red: #c41200;
+
+.notifyjs-yelpit-base {
+	position: relative;
+	text-align: left;
+	width: 300px;
+	background-color: #f8f8f8;
+	border-radius: 5px;
+	padding: 10px;
+	font-family: @font-family !important;
+	opacity: 0.95;
+
+	box-shadow: 2px 2px 2px #888888;
+	z-index: 9999 !important;
+
+	.header {
+		padding-bottom: 8px !important;
+	}
+
+	.yelp-it-business-name {
+		font-weight: bold;
+		.height(25px, 20px);
+	}
+
+	.yelp-it-phone-number {
+		padding-left: 5px !important;
+		color: #555555;
+		text-decoration: none;
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+	.yelp-it-business-rating {
+		padding-bottom: 5px !important;
+		img {
+			vertical-align: middle;
+			height: 20px;
+		}
+		.rating-count {
+			vertical-align: top;
+			padding-left: 5px !important;
+			text-decoration: none;
+			font-size: 14px !important;
+			color: lighten(black, 20%);
+			&:hover {
+				color: black;
+			}
+		}
+	}
+	.categories {
+		font-size: 14px !important;
+	}
+
+	.category:after {
+		content: ", ";
+	}
+	.category:last-child:after {
+		content: "";
+	}
+
+}

@@ -7,8 +7,9 @@ import sys
 import urllib
 import urllib2
 import oauth2
+from unidecode import unidecode
 
-import find_location
+import nlp
 
 BODY = 'body'
 TARGET = 'target'
@@ -29,15 +30,16 @@ app = Flask(__name__, static_url_path='')
 
 @app.route("/rating", methods=['POST'])
 def hello():
-    try:
-
+    try:   
+        # both of these are html elements
         body, target = request.form[BODY], request.form[TARGET]
+        query_type, query = _get_business(target)
 
-        response = search(_get_business(target), _get_location(body))
+        num_results = 1 if query_type == "business" else 3
+        response = search(query, _get_location(body), num_results)
         top_business = response['businesses'][0]
         return jsonify({RESULT: top_business})
     except Exception as e:
-        print e
         return jsonify({})
 
 
@@ -57,12 +59,14 @@ def yelp(host, path, url_params=None):
     """
     try:
         url_params = url_params or {}
+        # unicode not allowed here?
         encoded_params = urllib.urlencode(url_params)
+        print encoded_params
 
         url = 'http://{0}{1}?{2}'.format(host, path, encoded_params)
-        print url
         consumer = oauth2.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
         oauth_request = oauth2.Request('GET', url, {})
+
         oauth_request.update(
             {
                 'oauth_nonce': oauth2.generate_nonce(),
@@ -71,6 +75,7 @@ def yelp(host, path, url_params=None):
                 'oauth_consumer_key': CONSUMER_KEY
             }
         )
+        print "BLEH"
         token = oauth2.Token(TOKEN, TOKEN_SECRET)
         oauth_request.sign_request(oauth2.SignatureMethod_HMAC_SHA1(), consumer, token)
         signed_url = oauth_request.to_url()
@@ -85,12 +90,10 @@ def yelp(host, path, url_params=None):
         return response
 
     except Exception as e:
-        print e
+        print "error in request: %s" % str(e)
 
     
-
-
-def search(term, location):
+def search(term, location, num_results):
     """Query the Search API by a search term and location.
 
     Args:
@@ -100,40 +103,38 @@ def search(term, location):
     Returns:
         dict: The JSON response from the request.
     """
+    if isinstance(term, unicode):
+        term = unidecode(term)
+    if isinstance(location, unicode):
+        location = unidecode(term)
+
     url_params = {
         'term': term,
         'location': location,
-        'limit': SEARCH_LIMIT
+        'limit': num_results
     }
 
     return yelp(API_HOST, SEARCH_PATH, url_params=url_params)
 
 
-def _get_location(text):
+def _get_location(html):
   """
   returns a location from a given sample of text
 
   """
 
-  city = find_location.find_location(text)
+  city = nlp.find_location(html)
   if city:
     return city
   return "San Francisco"
 
-def _get_business(text):
+def _get_business(html):
   """
   returns the approximate name of a business given sample of text
 
   """
-  return text
+  return nlp.parse_business(html)
 
-def _parse_html_tree(html):
-    """
-    general heuristic: takes chunks of html from <h1> to <p> and parses it
-    for named entities (NE) <-- lol hope this works
-
-    """
-    pass
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")

@@ -5,7 +5,7 @@ import operator
 
 DEFAULT_CITY = "San Francisco"
 
-MIN_THRESHOLD = 5
+MIN_THRESHOLD = 10
 
 # wow this is almost as page rank as Google's
 PAGE_RANK = [
@@ -16,8 +16,12 @@ PAGE_RANK = [
     ("h4", 2),
     ("h5", 1),
     ("h6", 1),
-    ("p", 1)
+    ("p", 1),
+    ("div", 1)
 ]
+
+PROXIMITY_MAX_RANK = 5
+PROXIMITY_MAX_DEPTH = 3
 
 def find_location(html):
     html = BeautifulSoup(html)
@@ -29,6 +33,13 @@ def find_location(html):
     return DEFAULT_CITY
 
 def rank_city_names(html):
+    """
+    general heuristic: takes chunks of html from <h1> to <p> and parses it
+    for named entities (NE) <-- lol hope this works
+
+    note: should also rank inside-out instead of top down using lxml tree
+
+    """
     ranker = {}
     kill = False
     for tag, addition in PAGE_RANK:
@@ -38,6 +49,8 @@ def rank_city_names(html):
                     for city in _find_city_name(element.string):
                         if _update_ranker(ranker, city, addition) >= MIN_THRESHOLD:
                             kill = True
+    kill = False
+    # search outwardly
     return ranker
 
 def _update_ranker(ranker, value, addition):
@@ -73,3 +86,22 @@ def _find_city_name(query):
     if ne:
         return _world_cities(ne)
     return []
+
+def parse_business(html):
+    try:
+        # query = BeautifulSoup(html).string
+        query = html
+        print query
+    except Exception as e:
+        print "BeautifulSoup can not parse %s --> %s" % html
+    try:
+        tokens = nltk.word_tokenize(query)
+        pos_tags = nltk.pos_tag(tokens)
+        if any([True for word, pos in pos_tags if pos == "NNP"]):
+            print "returning business: %s" % query
+            return "business", query
+        print "returning subject: %s" % query
+        return "subject", query
+    except Exception as e:
+        print "parse_business: %s" % str(e)
+        return 
