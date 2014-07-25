@@ -1,20 +1,21 @@
 $(document).ready(function() {
 	console.log('Welcome to the Yelp It Extension');
-	var $pageText = $('body').text();
-	var $target = 'Gary Danko';
+	// var pageText = $('html').html();
 	
 	var showPopUp = function(json) {
 		console.log('response');
 		console.log(json);
 	};
 
-	var request = function(target) {
+	var request = function(query) {
+		var formData = {body: $("html").html(), target: String(query)};
+		console.log(formData);
 		$.ajax({
-			url: "http://localhost:5000/rating",
-			data: {'body': $pageText, 'target': $target},
-			success: showPopUp,
-			type: "POST",
-			dataType: "json"
+			"url": "http://localhost:5000/rating",
+			"data": formData,
+			"success": showPopUp,
+			"type": "POST",
+			"dataType": "json"
 		});
 	}
 
@@ -33,7 +34,8 @@ $(document).ready(function() {
 	var highlightMouseup = function(){
 	  var st = getSelected();
 	  if(st!=''){
-	    console.log("You selected:\n"+st);
+	    console.log(st);
+	    request(st);
 	  }
 	}
 

@@ -7,7 +7,8 @@ import sys
 import urllib
 import urllib2
 import oauth2
-import nltk
+
+import find_location
 
 BODY = 'body'
 TARGET = 'target'
@@ -29,9 +30,8 @@ app = Flask(__name__, static_url_path='')
 @app.route("/rating", methods=['POST'])
 def hello():
     try:
-        print request.form
+
         body, target = request.form[BODY], request.form[TARGET]
-        print body, target
 
         response = search(_get_business(target), _get_location(body))
         top_business = response['businesses'][0]
@@ -114,6 +114,9 @@ def _get_location(text):
   returns a location from a given sample of text
 
   """
+  print type(text)
+
+  find_location.find_location(text)
   return "San Francisco"
 
 def _get_business(text):
@@ -121,6 +124,7 @@ def _get_business(text):
   returns the approximate name of a business given sample of text
 
   """
+  print type(text)
   return "Gary Danko"
 
 def _parse_html_tree(html):
@@ -130,6 +134,7 @@ def _parse_html_tree(html):
 
     """
     pass
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")
 
