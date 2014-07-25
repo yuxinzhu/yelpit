@@ -114,9 +114,10 @@ def _get_location(text):
   returns a location from a given sample of text
 
   """
-  print type(text)
 
-  find_location.find_location(text)
+  city = find_location.find_location(text)
+  if city:
+    return city
   return "San Francisco"
 
 def _get_business(text):
@@ -124,8 +125,7 @@ def _get_business(text):
   returns the approximate name of a business given sample of text
 
   """
-  print type(text)
-  return "Gary Danko"
+  return text
 
 def _parse_html_tree(html):
     """
