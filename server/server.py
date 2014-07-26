@@ -21,8 +21,8 @@ URL = 'url'
 
 CONSUMER_KEY = "SPJ-oX5isiNEsdCwwajTOA"
 CONSUMER_SECRET = "qo3eXCuN6fFLp1djXPJrNOYFQSQ"
-TOKEN = "aRgC-pfCRzTs4Yl0fO03kHwDTs6bC9d7"
-TOKEN_SECRET = "kJ8Y06m-X1kVoCG7MJerDYvQ1Jk"
+TOKEN = "LFCj56ebUj5q8COhfuKVN9R84CFKMPHW"
+TOKEN_SECRET = "ze64zIljG603UIFRTiD6XoztnS8"
 ENCLOSING_NODE = 'enclosing_node'
 
 API_HOST = 'api.yelp.com'
@@ -117,7 +117,11 @@ def search(term, location, num_results):
         term = unicode(unidecode(term))
     if isinstance(location, unicode):
         location = unicode(unidecode(location))
-
+        
+    print '----------------------------'
+    print term, type(term)
+    print location, type(location)
+    print '----------------------------'
     url_params = {
         'term': term,
         'location': location,
@@ -132,9 +136,7 @@ def _get_location(html, context, cache_key):
   returns a location from a given sample of text
 
   """
-  print 'loc'
   city = nlp.find_location(html, context, cache_key)
-  print city
   if city:
     return city
   return "San Francisco"

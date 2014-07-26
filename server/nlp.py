@@ -50,13 +50,26 @@ def rank_city_names(html, context, cache_key):
     ranker = {}
     kill = False
     try:
-
+        # reuse cache_key (url) as heuristic
         cache_hit = r.get(cache_key)
         if cache_hit:
             print 'HIT THE CACHE %s:%s' % (str(cache_key), str(cache_hit))
             ranker = json.loads(cache_hit)
         else:
+            # generated_url = " ".join([word.title() for word in cache_key.split("-")])
+            # print _find_city_name(generated_url)
+
+            # print generated_url
+            # generated_url_cities = []
+            # # hacky only works for 1 word cities
+            # for token in generated_url:
+            #     generated_url_cities.extend(_find_city_name(token))
+
+            # for city in generated_url_cities:
+            #     _update_ranker(ranker, city, addition)
+
             for tag, addition in PAGE_RANK:
+                print tag
                 if not kill:
                     for element in html.find_all(tag):
                         if element.string:

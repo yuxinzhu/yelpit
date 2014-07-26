@@ -86,7 +86,7 @@ $(document).ready(function() {
         var formData = {body: $("html").html(), target: String(query), url: document.URL, enclosing_node: enclosingNode};
         console.log(formData);
         var xhr = $.ajax({
-            "url": "http://localhost:5000/rating",
+            "url": "https://localhost:5000/rating",
             "data": formData,
             "success": showPopUp,
             "type": "POST",
@@ -117,7 +117,7 @@ $(document).ready(function() {
         if(st!='') {
             var queryLength = st.toString().split(/\s+/).length;
             if (queryLength < maxQueryLength) {
-                request(st, enclosingNode);
+                request(st.toString(), enclosingNode);
             }
         }
     }
